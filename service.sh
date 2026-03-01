@@ -12,36 +12,17 @@ fi
 
 sleep 20
 
-mkdir -p "$ROOTFS/dev" "$ROOTFS/dev/pts" "$ROOTFS/proc" "$ROOTFS/sys" "$ROOTFS/dev/shm" "$ROOTFS/system" "$ROOTFS/vendor"
-
-if ! grep -q "$ROOTFS/dev" /proc/mounts; then
-    $BUSYBOX mount -o bind /dev "$ROOTFS/dev"
-fi
-
-if ! grep -q "$ROOTFS/proc" /proc/mounts; then
-    $BUSYBOX mount -o bind /proc "$ROOTFS/proc"
-fi
-
-if ! grep -q "$ROOTFS/sys" /proc/mounts; then
-    $BUSYBOX mount -o bind /sys "$ROOTFS/sys"
-fi
-
-if ! grep -q "$ROOTFS/dev/pts" /proc/mounts; then
-    $BUSYBOX mount -t devpts devpts "$ROOTFS/dev/pts"
-fi
-
-if ! grep -q "$ROOTFS/dev/shm" /proc/mounts; then
-    $BUSYBOX mount -t tmpfs -o size=128M tmpfs "$ROOTFS/dev/shm"
-fi
-
-if ! grep -q "$ROOTFS/vendor" /proc/mounts; then
-    $BUSYBOX mount -o bind /vendor "$ROOTFS/vendor"
-fi
-
-if ! grep -q "$ROOTFS/system" /proc/mounts; then
-    $BUSYBOX mount -o bind /system "$ROOTFS/system"
-fi
-
+nsenter --mount=/proc/1/ns/mnt -- sh -c "
+mkdir -p "$ROOTFS/dev" "$ROOTFS/dev/pts" "$ROOTFS/proc" "$ROOTFS/sys" "$ROOTFS/dev/shm" "$ROOTFS/system" "$ROOTFS/vendor" "$ROOTFS/home"
+mount -o bind /dev "$ROOTFS/dev"
+mount -o bind /proc "$ROOTFS/proc"
+mount -o bind /sys "$ROOTFS/sys"
+mount -t devpts devpts "$ROOTFS/dev/pts"
+mount -t tmpfs -o size=128M tmpfs "$ROOTFS/dev/shm"
+mount -o bind /vendor "$ROOTFS/vendor"
+mount -o bind /system "$ROOTFS/system"
+mount -o bind /sdcard/home "$ROOTFS/home"
+"
 echo "nameserver 1.1.1.1" > "$ROOTFS/etc/resolv.conf"
 echo "nameserver 1.0.0.1" >> "$ROOTFS/etc/resolv.conf"
 
@@ -50,6 +31,7 @@ if [ ! -f "$ROOTFS/usr/sbin/sshd" ]; then
         export PATH=/usr/sbin:/usr/bin:/sbin:/bin
         apk update
         apk add openssh
+        apk add nano
         ssh-keygen -A
     "
 fi
