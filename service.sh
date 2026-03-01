@@ -41,6 +41,7 @@ if [ ! -f "$ROOTFS/usr/sbin/sshd" ]; then
     $BUSYBOX chroot "$ROOTFS" /bin/sh -c "
         export PATH=/usr/sbin:/usr/bin:/sbin:/bin
         apk update
+        apk add nano
         apk add openssh
         ssh-keygen -A
     "
