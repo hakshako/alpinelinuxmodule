@@ -12,7 +12,7 @@ fi
 
 sleep 20
 
-mkdir -p "$ROOTFS/dev" "$ROOTFS/dev/pts" "$ROOTFS/proc" "$ROOTFS/sys" "$ROOTFS/dev/shm"
+mkdir -p "$ROOTFS/dev" "$ROOTFS/dev/pts" "$ROOTFS/proc" "$ROOTFS/sys" "$ROOTFS/dev/shm" "$ROOTFS/system" "$ROOTFS/vendor"
 
 if ! grep -q "$ROOTFS/dev" /proc/mounts; then
     $BUSYBOX mount -o bind /dev "$ROOTFS/dev"
@@ -34,6 +34,14 @@ if ! grep -q "$ROOTFS/dev/shm" /proc/mounts; then
     $BUSYBOX mount -t tmpfs -o size=128M tmpfs "$ROOTFS/dev/shm"
 fi
 
+if ! grep -q "$ROOTFS/vendor" /proc/mounts; then
+    $BUSYBOX mount -o bind /vendor "$ROOTFS/vendor"
+fi
+
+if ! grep -q "$ROOTFS/system" /proc/mounts; then
+    $BUSYBOX mount -o bind /system "$ROOTFS/system"
+fi
+
 echo "nameserver 1.1.1.1" > "$ROOTFS/etc/resolv.conf"
 echo "nameserver 1.0.0.1" >> "$ROOTFS/etc/resolv.conf"
 
@@ -41,7 +49,6 @@ if [ ! -f "$ROOTFS/usr/sbin/sshd" ]; then
     $BUSYBOX chroot "$ROOTFS" /bin/sh -c "
         export PATH=/usr/sbin:/usr/bin:/sbin:/bin
         apk update
-        apk add nano
         apk add openssh
         ssh-keygen -A
     "

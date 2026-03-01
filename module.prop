@@ -1,6 +1,6 @@
 id=alpinelinuxmodule
 name=Alpine Linux Module
-version=1.20
+version=1.21
 versionCode=5
 author=hakshako
 description=Alpine Linux Mini RootFS
